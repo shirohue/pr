@@ -1,0 +1,217 @@
+BT prac notes: 
+
+
+Recovery Security Phrase of meta mask of dhankeanuj@gmail.com
+want position cupboard habit mind bright race october network vessel scrap original
+
+
+
+Account adress: 0xDEC4A9f5b787FAd28637706b1b9dAF216116E784
+
+notes:  PRac 1 and 2:-
+1. The Core Concepts
+MetaMask: Think of this as your digital wallet and web passport for the blockchain world. 
+It stores your private keys and lets you interact with decentralized applications directly from your web browser.
+Ethereum: A public blockchain network that functions like a global computer. 
+Unlike Bitcoin (which mainly handles simple money transfers), Ethereum can execute code and smart contracts.
+Ether (ETH): The official cryptocurrency used to pay for work and transactions on the Ethereum blockchain.
+Gas Fees: The transaction fee you pay to the network validators to process your data and store it on the blockchain.
+Sepolia Testnet: A exact duplicate copy of the real Ethereum network used by developers and students. 
+It works identically to main Ethereum, but uses fake "test ETH" so you don't lose real money while learning or testing.
+2. Summary of What You AccomplishedInstalled & Secured a Wallet: You set up MetaMask, generating a public address (where people send you funds) and a secret recovery phrase (your master key).
+Connected to a Test Environment: You switched your wallet from the real Ethereum network to Sepolia so you could test safely.
+Acquired Test Currency: You requested free Sepolia ETH from a faucet to fund your lab account.
+Executed & Analyzed a Transaction: You created a transaction, observed how MetaMask estimates the Gas Fee (Gas Limit $\times$ Gas Price), and broadcast it to be permanently recorded on the blockchain.
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Notes: Prac 3:-
+code:- 
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract SimpleBank {
+    // Keeps track of everyone's balance
+    mapping(address => uint256) private balances;
+
+    // 1. Deposit Money
+    function deposit() public payable {
+        balances[msg.sender] += msg.value;
+    }
+
+    // 2. Withdraw Money
+    function withdraw(uint256 amount) public {
+        require(balances[msg.sender] >= amount, "Not enough funds!");
+        balances[msg.sender] -= amount;
+        payable(msg.sender).transfer(amount);
+    }
+
+    // 3. Show Balance
+    function getBalance() public view returns (uint256) {
+        return balances[msg.sender];
+    }
+}
+
+
+What We Did & Why We Did ItWhat we did: We wrote, deployed, and tested a decentralized Smart Contract (SimpleBank) that lets users deposit funds, withdraw funds, and check their account balance.
+Why we did it: To understand how decentralized applications (dApps) work on the blockchain without risking real money, mimicking how a real-world digital bank operates on code.
+How We Did It & Tools UsedHow we did it: We wrote the code in Remix, compiled it into bytecode, linked our MetaMask wallet to the Sepolia test network, deployed the contract on-chain, and interacted with it via transaction buttons.
+Tools We Used & Why:Remix IDE: A browser-based code editor and compiler. We used it because it requires zero complex installation and lets you test contracts instantly.
+MetaMask: A crypto wallet extension. We used it to manage our keys and approve/sign blockchain transactions securely.   
+Sepolia Test Network: A testing blockchain. We used it instead of the main Ethereum network so we could run transactions using fake money instead of losing real funds on gas fees.
+Glossary of New TermsSmart Contract: Self-executing code stored on a blockchain that automatically enforces rules (like a digital vending machine or bank contract).
+Solidity: The primary programming language used to write smart contracts on Ethereum and EVM-compatible blockchains.
+Test Network (Testnet): A clone of the main blockchain used by developers to test code safely using fake tokens.
+Test Ether (Test ETH): Free, worthless tokens used on a testnet to pay for gas fees during development and testing.
+Gas Fees: The transaction fee paid to network validators to process and execute your code on the blockchain.
+msg.sender: A built-in Solidity variable representing the wallet address of the person currently calling the function.
+msg.value: The amount of Ether sent along with the transaction call.
+
+
+Code Explanation (Function by Function)Solidity// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract SimpleBank {
+    mapping(address => uint256) private balances;
+
+    // 1. Deposit Money: Accepts incoming ETH and adds it to the caller's balance ledger
+    function deposit() public payable {
+        balances[msg.sender] += msg.value;
+    }
+
+    // 2. Withdraw Money: Checks if you have enough funds, subtracts it, and sends ETH back to your wallet
+    function withdraw(uint256 amount) public {
+        require(balances[msg.sender] >= amount, "Not enough funds!");
+        balances[msg.sender] -= amount;
+        (bool success, ) = payable(msg.sender).call{value: amount}("");
+        require(success, "Transfer failed!");
+    }
+
+    // 3. Show Balance: Reads and returns the caller's current balance (completely free, zero gas fee)
+    function getBalance() public view returns (uint256) {
+        return balances[msg.sender];
+    }
+}
+
+We deposited Test Ether (ETH) into the smart contract to test that our deposit function actually worked on the blockchain and to make sure the contract could successfully receive and track real value.
+
+Here is why that step is crucial:
+
+Testing the Ledger: Depositing test ETH triggered the deposit() function, forcing the smart contract's balances mapping to record that your specific wallet address owns those funds.
+
+Proving Value Transfer: Unlike a standard database, a smart contract handles real assets (even if they are test tokens). 
+Depositing proves that the contract can accept incoming money, hold it safely in its code-controlled address, and accurately update balances before you attempt to withdraw or check your balance.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Prac 4:
+Step 1: The Smart Contract Code (StudentData.sol)
+Create a new file in Remix IDE named StudentData.sol and paste this code:
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract StudentData {
+    
+    // 1. Structure to define a Student's blueprint
+    struct Student {
+        uint id;
+        string name;
+        uint age;
+    }
+
+    // 2. Dynamic Array to store a list of multiple students
+    Student[] public students;
+
+    // Function to add a new student to the array
+    function addStudent(uint _id, string memory _name, uint _age) public {
+        students.push(Student(_id, _name, _age));
+    }
+
+    // Function to retrieve total number of students
+    function getStudentCount() public view returns (uint) {
+        return students.length;
+    }
+
+    // 3. Fallback and Receive functions 
+    // These execute if someone accidentally sends Ether directly to the contract or calls a function that doesn't exist.
+    receive() external payable {}
+    
+    fallback() external payable {}
+}
+
+Step 2: Explanation of Key Constructs Used
+Structures (struct): Allows you to create a custom data type (Student) that groups related variables together (id, name, age).
+
+Arrays (Student[]): A dynamic list (students) used to store multiple instances of the Student struct on the blockchain.
+
+Fallback & Receive Functions (receive & fallback): Special catch-all functions that handle incoming Ether transfers or missing function calls safely so the contract doesn't crash or reject funds unexpectedly.
+
+Step 3: How to Deploy and Observe Gas / Transaction Fees
+Compile:
+
+Go to the Solidity Compiler tab on the left sidebar in Remix.
+
+Ensure version 0.8.x is selected and click Compile StudentData.sol.
+
+Deploy via MetaMask (Sepolia Testnet):
+
+Go to the Deploy & Run Transactions tab.
+
+Set Environment to Browser Extension (MetaMask).
+
+Ensure your MetaMask is connected to Sepolia.
+
+Select StudentData from the Contract dropdown and click Deploy.
+
+Confirm the transaction popup in MetaMask.
+
+Step 4: Observing Transaction Fees & Gas Values
+After your deployment or function calls are confirmed, look at the Remix Terminal (at the bottom of the screen) and your MetaMask transaction details:
+
+Gas Limit vs. Gas Used (in Remix Terminal):
+
+When you expand a transaction log in the terminal, you will see fields like gas: 123456... and transaction cost.
+
+Gas Used: The exact amount of computational work required to execute your code or store your data on the blockchain. Storing data in an array (addStudent) consumes more gas than reading data (getStudentCount) because writing alters the blockchain state.
+
+Transaction Fee (in MetaMask):
+
+Expressed in Gwei or Sepolia ETH (e.g., < 0.0001 ETH). This is calculated as:
+
+Transaction Fee=Gas Used×Gas Price
+
+then:-
+Step 1: Expand Your Deployed Contract
+Look at the bottom-left panel in Remix under Deployed Contracts.
+
+Click the dropdown arrow next to your deployed contract to reveal its function buttons (addStudent, students, getStudentCount, etc.).
+
+Step 2: Test Adding a Student (addStudent)
+Because this operation modifies data on the blockchain, it requires gas and a transaction confirmation.
+
+Find the input fields next to the orange addStudent button.
+
+Enter test data:
+
+_id: 1
+
+_name: "Alice"
+
+_age: 20
+
+Click the orange addStudent button.
+
+A MetaMask pop-up will appear. Review the Network fee (gas fee) and click Confirm.
+
+Wait about 12 seconds for the transaction to be mined.
+
+Step 3: Test Reading Data & Check Gas/Transaction Fees
+Check Student Count (getStudentCount): Click the blue getStudentCount button. Since this is a view function that only reads data, it executes instantly and is completely free (0 gas fee). The terminal will return 1.
+
+View Student Details (students): Enter 0 in the input box next to the blue students button and click it. It will return the data for the first student (id: 1, name: "Alice", age: 20) for free.
+
+Step 4: Observe Gas and Transaction Fees (Practical Requirement)
+To answer your practical's requirement on observing fees:
+
+Writing Data (addStudent): Cost gas because it saves a new structure inside a dynamic array on the blockchain, permanently updating the state. You can see the exact Gas Used and Transaction Cost inside the green drop-down log in the Remix terminal at the bottom.
+
+Reading Data (getStudentCount / students): Cost zero gas when called locally, because reading information doesn't change the blockchain state.
